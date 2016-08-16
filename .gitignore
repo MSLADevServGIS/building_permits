@@ -6,7 +6,6 @@ __pycache__/
 *.sqlite
 *.lnk
 
-*.gdb/
 *.lock
 
 # Distribution / packaging
