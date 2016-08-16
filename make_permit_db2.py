@@ -225,10 +225,11 @@ def load_data(conn):
     if "parcels_dis" not in TABLES:
         sql = dslw.utils.ImportSHP(PARCELS_DIS, "parcels_dis", "UTF-8", 2256,
                                    coerce2D=1)
-        if _c.execute(sql).fetchone() == (0,):
-            status.failure()
-        else:
-            status.success()
+        _c.execute(sql)
+        _c.execute("UPDATE parcels_dis "
+                   "SET geometry=CastToMultiPolygon(ST_MakeValid(geometry)) "
+                   "WHERE IsValid(geometry) <> 1;")
+        status.success()
     else:
         status.custom("[SKIP]", "yellow")
 
@@ -504,22 +505,51 @@ def dissolve_points(conn, permit_table):
     _c = conn.cursor()
     sql = ("")
 
-
-def dev_density(conn, permit_table):
+# DO NOT USE
+# -- USE density.sql instead
+'''
+def dev_density(conn, permits_dissolved):
     _c = conn.cursor()
-    duac = ("SELECT p.address, p.permit_type, z.base, p.dwellings, "
-            " ST_Area(u.geometry)/43560 as sqft, "
-            " FLOOR(p.dwellings/(ST_Area(u.geometry)/43560.0)) as duac "
-            "FROM {} p, parcels_dis u, ufda_zoning z "
-            "WHERE ST_Intersects(p.geometry, u.geometry)"
-            " AND ST_Intersects(p.geometry, z.geometry)"
-            " AND duac IS NOT NULL AND permit_type NOT LIKE 'BNS%' "
-            "ORDER BY duac DESC").format(
-                permit_table)
-    rows = _c.execute(duac).fetchall()
-    df = pd.DataFrame(rows, columns=["Address", "DevType", "Zoning",
-                                     "Dwellings", "SqFt", "DUAC"])
-    return df
+    temp_duacs = "{}_duac_temp".format(permits_dissolved)
+    year = re.findall("\d+", permits_dissolved)[0]
+    final_table = "duacs{}".format(year)
+    create = ("CREATE TABLE {0} AS "
+	      "SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, "
+              " z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry "
+              "FROM {1} p "
+              "JOIN ufda_zoning z "
+              "  ON Intersects(p.geometry, z.geometry) "
+              "GROUP BY p.geocode "
+              "HAVING SUM(p.dwellings) > 1 " #AND SUM(p.dwellings) < 100 "
+              "ORDER BY SUM(p.dwellings) DESC; "
+              ).format(temp_duacs, permits_dissolved)
+    duacs = ("CREATE TABLE {1} AS "
+             "  SELECT p.*, FLOOR(dwellings/(Area(u.geometry)/43560)) AS duac "
+             "  FROM {0} p "
+             "  JOIN parcels_dis u "
+             "    ON Intersects(p.geometry, u.geometry) "
+             "  ORDER BY duac DESC;").format(temp_duacs, final_table)
+    geom = ("SELECT RecoverGeometryColumn('{0}', 'geometry', 2256, "
+            "  'MULTIPOINT', 'XY');").format(final_table)
+    drop = "DROP TABLE {0};".format(temp_duacs)
+    _c.execute(create)
+    _c.execute(duacs)
+    _c.execute(geom)
+    _c.execute(drop)
+    dslw.lite2csv(conn, final_table, "reports/{}_dev.csv".format(final_table))
+    return
+'''
+
+def dissolve(conn, permit_table):
+    _c = conn.cursor()
+    sql = (
+        "CREATE TABLE {0}_dis AS SELECT permit_number, geocode, address, "
+        " dwellings, ST_Multi(ST_Collect(geometry)) AS geometry "
+        "FROM {0} GROUP BY  permit_number; "
+        "SELECT RecoverGeometryColumn('{0}_dis', 'geometry', 2256, "
+        " 'MULTIPOINT', 'XY');").format(permit_table)
+    _c.execute(sql)
+    return
 
 
 # =============================================================================
@@ -573,6 +603,7 @@ if __name__ == "__main__":
         handle_ex(e)
 
     sp_tables = [t for t in conn.get_tables() if t.startswith("ufda")]
+    sp_tables.append('parcels_dis')
     for table in sp_tables:
         select_null = "SELECT * FROM {} WHERE geometry IS NULL".format(table)
         delete_sql = "DELETE FROM {} WHERE geometry IS NULL".format(table)
