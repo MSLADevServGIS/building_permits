@@ -1,7 +1,7 @@
 -- 2013
 CREATE TABLE duacs13_temp AS 
-	SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, z.BASE AS zoning, 
-	    ST_Multi(ST_Collect(p.geometry)) AS geometry 
+	SELECT p.address AS address, p.geocode AS geocode, SUM(p.dwellings) AS dwellings, 
+	    z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry 
 	  FROM res2013_dis p 
 	  JOIN ufda_zoning z 
 	  ON Intersects(p.geometry, z.geometry) 
@@ -23,8 +23,8 @@ DROP TABLE duacs13_temp;
 
 -- 2014
 CREATE TABLE duacs14_temp AS 
-	SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, z.BASE AS zoning, 
-	    ST_Multi(ST_Collect(p.geometry)) AS geometry 
+	SELECT p.address AS address, p.geocode AS geocode, SUM(p.dwellings) AS dwellings, 
+	    z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry 
 	  FROM res2014_dis p 
 	  JOIN ufda_zoning z 
 	  ON Intersects(p.geometry, z.geometry) 
@@ -46,8 +46,8 @@ DROP TABLE duacs14_temp;
 
 -- 2015 
 CREATE TABLE duacs15_temp AS 
-	SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, z.BASE AS zoning, 
-	    ST_Multi(ST_Collect(p.geometry)) AS geometry 
+	SELECT p.address AS address, p.geocode AS geocode, SUM(p.dwellings) AS dwellings, 
+	    z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry 
 	  FROM res2015_dis p 
 	  JOIN ufda_zoning z 
 	  ON Intersects(p.geometry, z.geometry) 

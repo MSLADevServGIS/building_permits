@@ -12,14 +12,10 @@ See the documentation for more information.
 """
 
 import os
-import sys
-import traceback
 import re
 from glob import glob
 
 import pandas as pd
-import geopy
-# from termcolor import cprint
 
 import dslw
 from tkit.cli import StatusLine, handle_ex
@@ -110,7 +106,7 @@ def process_accela(all_permits):
     # Rename index column 'ix'
     all_const.columns.name = 'ix'
 
-    # Drop rows 0-3
+    # Drop rows 0-3 which are just headings
     all_const.drop([0, 1, 2, 3], inplace=True)
 
     # Rename subtype column to permit_type
@@ -167,18 +163,19 @@ def process_accela(all_permits):
         # Get residential construction of only listed subtypes and
         #   dwellings >= 1
         ((all_const["permit_type"].isin(res_codes.keys()) &
-            all_const["dwellings"] >= 1))        
-    # Finally, groupby permit number, remove duplicates and fix index col
-    # ].groupby("permit_number").first().reset_index()
+            all_const["dwellings"] >= 1))
+        # Finally, groupby permit number, remove duplicates and fix index col
+        # ].groupby("permit_number").first().reset_index()
         ].groupby(["permit_number", "geocode"]).first().reset_index()
 
     # TODO: maybe make reports for other construction types too?
-    #com_const = all_const[all_const['subtype'].isin(com_codes.keys())]
-    #pub_const = all_const[all_const['subtype'].isin(pub_codes.keys())]
-
+    '''
+    com_const = all_const[all_const['subtype'].isin(com_codes.keys())]
+    pub_const = all_const[all_const['subtype'].isin(pub_codes.keys())]
+    '''
     # Export
-    #res_out = res_const.groupby('permit_number').first().reset_index()
-    #res_out.to_excel(res_report, index=False)
+    res_out = res_const.groupby('permit_number').first().reset_index()
+    # res_out.to_excel(res_report, index=False)
     res_const.to_csv(res_report, index=False)
 
     '''
@@ -195,6 +192,7 @@ def process_accela(all_permits):
 # UTILITIES
 
 
+# TODO: new permit_features.sqlite db
 def load_data(conn):
     """Loads data and shows messages."""
     print("Loading spatial data...")
@@ -381,13 +379,11 @@ def fix_addrs(conn, permit_table):
                     "WHERE fulladdress LIKE {}".format(ParseAddr(old_addr[0])))
         correct = _c.execute(addr_qry).fetchall()
         update_q = (
-            #"UPDATE {} SET geocode=?, address=?, notes = 'CHANGED: {}' "
             "UPDATE {} SET address=?, notes = 'CHANGED: {}' "
             "WHERE address=?")
         if correct:
             for match in correct:
                 _c.execute(update_q.format(permit_table, old_addr[0]),
-                           #(match[0], match[1], old_addr[0]))
                            (match[1], old_addr[0]))
     new_addrs = set(_c.execute("SELECT address FROM {}".format(permit_table)))
     not_fixed = list(new_addrs.difference(addrs))
@@ -459,7 +455,7 @@ def get_addr_geom(conn, permit_table):
          "FROM {} p JOIN ufda_addrs a "
          " ON a.fulladdress=p.address "
          "WHERE p.geometry IS NULL").format(permit_table)
-    
+
     u = ("UPDATE {} SET geometry=? "
          "WHERE address=? AND geometry IS NULL").format(permit_table)
     g = _c.execute(s).fetchall()
@@ -467,13 +463,14 @@ def get_addr_geom(conn, permit_table):
         _c.execute(u, t)
     return
 
+
 def get_parcel_geom(conn, permit_table):
     _c = conn.cursor()
     s = ("SELECT PointOnSurface(u.geometry), p.geocode "
          "FROM {} p JOIN ufda_parcels u "
          " ON u.parcelid=p.geocode "
          "WHERE p.geometry IS NULL").format(permit_table)
-    
+
     u = ("UPDATE {} SET geometry=? "
          "WHERE geocode=? AND geometry IS NULL").format(permit_table)
     g = _c.execute(s).fetchall()
@@ -494,16 +491,17 @@ def addrs2points(conn, permit_table):
              " WHERE address=? AND geometry IS NULL").format(permit_table)
         _c.execute(u, (point, addr[0]))
     return
-'''    
+'''
 
 
 # =============================================================================
 # SPATIAL DATA CREATION FUNCTIONS
 
-
+'''
 def dissolve_points(conn, permit_table):
     _c = conn.cursor()
     sql = ("")
+'''
 
 # DO NOT USE
 # -- USE density.sql instead
@@ -514,7 +512,7 @@ def dev_density(conn, permits_dissolved):
     year = re.findall("\d+", permits_dissolved)[0]
     final_table = "duacs{}".format(year)
     create = ("CREATE TABLE {0} AS "
-	      "SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, "
+              "SELECT p.geocode AS geocode, SUM(p.dwellings) AS dwellings, "
               " z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry "
               "FROM {1} p "
               "JOIN ufda_zoning z "
@@ -539,6 +537,7 @@ def dev_density(conn, permits_dissolved):
     dslw.lite2csv(conn, final_table, "reports/{}_dev.csv".format(final_table))
     return
 '''
+
 
 def dissolve(conn, permit_table):
     _c = conn.cursor()
@@ -572,7 +571,7 @@ if __name__ == "__main__":
 
     # Find Accela permit data (.xlsx)
     reports = [os.path.abspath(f) for f in glob("data/accela_data/*.xlsx")]
-    #const_reports = [f for f in os.listdir(out_dir) if f.startswith("all") and
+    # const_reports = [f for f in os.listdir(out_dir) if f.startswith("all") and
     #                 f.endswith(".xlsx")]
     if not reports:
         raise IOError("No Accela data found in data/accela_data/")
@@ -647,12 +646,17 @@ if __name__ == "__main__":
         else:
             status.custom("[SKIP]", "yellow")
 
+    status.write("Generating density report...")
+    cur.execute(open("tools/density.sql", "r").read())
+    status.success()
+    '''
     print("Generating Reports...")
     for table in permit_tables:
         status.write("  {}...".format(table))
         df = dev_density(conn, table)
         df.to_csv("reports/density_{}.csv".format(table), index=False)
-        status.success()                
+        status.success()
+    '''
 
     print("")
     status.custom("COMPLETE", "cyan")
