@@ -1,0 +1,23 @@
+'''
+# Multidwelling developments
+sql = """
+SELECT DISTINCT permit_number, sum(dwellings) 
+FROM {table} 
+GROUP BY permit_number, geocode 
+HAVING SUM(dwellings) >=3;
+"""
+
+
+cur.execute(sql).fetchall()
+'''
+
+arcpy.FeatureClassToFeatureClass_conversion("ufda_parcels", "in_memory", "parcels_pre")
+arcpy.AddField_management("in_memory/parcels_pre", "dis_geo", "TEXT")
+arcpy.CalculateField_management("in_memory/parcels_pre", "dis_geo", "!ParcelID![:-4] + '000'", "PYTHON")
+arcpy.Dissolve_management("in_memory/parcels_pre", "in_memory/parcels_dis", "dis_geo")
+arcpy.FeatureClassToFeatureClass_conversion("in_memory/parcels_dis", "in_memory", "parcels_dis")
+
+
+arcpy.Dissolve_management("condos", "in_memory/condos_dis", "name")
+
+

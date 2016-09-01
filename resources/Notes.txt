@@ -1,30 +1,9 @@
-http://www.bostongis.com/TutBook.aspx
+4100 Mullan:
+54 units in 2011	10 DUAC (gross)
+18 units in 2013	
+24 units in 2015
+= 96 units		18 DUAC (gross)
++9 office, garage, etc buildings
+= 105 tax geocodes/parcels in SDE parcel layer
 
-
-SELECT COUNT(a.geometry)
-FROM ufda_nhoods u, ufda_addrs a
-WHERE u.nhood_name = 'University' AND Within(a.geometry, u.geometry)
-
-cur.execute("SELECT COUNT(a.geometry) FROM ufda_nhoods u, ufda_addrs a
-WHERE u.nhood_name = 'University' AND Within(a.geometry, u.geometry)").fetchall()
-
-
-
-
-
-IDEAS
-
-"cythonize" utils:
--- To prevent tampering with the assert_sql code
-"cythonize" _ogr:
--- Speed up loading large datasets with ogr2lite
-
-dslw.utils.DropColumns([columns], inverse=False)
--- Allows user to drop a list of columns. The inverse option tells the function
-   to keep only the listed columns.
-   * Likely best done using pandas
-
-dslw.utils.ConvertColumnType(column, type)
--- Allows user to change the values in a column to a different SQLite type (e.g. INTEGER, TEXT, etc)
-   This could be done with .applymap() in pandas, or with SQL "UPDATE" statement
-
+5.328 Acre property.
