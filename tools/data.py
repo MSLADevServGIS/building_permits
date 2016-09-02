@@ -16,7 +16,7 @@ from glob import glob
 # =============================================================================
 # DATA
 
-FEATURES_DB = os.path.abspath("../data/permit_features.sqlite")
+FEATURES_DB = os.path.realpath("../data/permit_features.sqlite")
 
 # Input geodatabase and featureclass paths
 NETWORK_BASE = r"\\cityfiles\DEVServices\ArcExplorer\Data"

@@ -5,11 +5,14 @@ permits.py -- Building Permit Database Script
 Author: Garin Wally; April-July 2016
 
 This script processes building permit data from Accela, builds a new SQLite
-database ('permits.sqlite'), inserts relevant featureclasses from an ESRI File
-Geodatabase, and creates permits<year> features by joining permits with either
-ufda_addr points or ufda_parcels centroid points.
+database ('permits.sqlite'), inserts relevant spatial data from the
+permit_features.sqlite SQLite/SpatiaLite database, and 'spatializes' those
+permits by joining permits with either ufda_addr points or ufda_parcels
+centroid points (technically it's not a centroid (PointOnSurface)).
 See the documentation for more information.
 """
+
+__version__ = '0.4'
 
 import os
 import re
@@ -24,7 +27,6 @@ from tkit.cli import StatusLine, handle_ex
 from tools import data
 from tools import process
 
-
 status = StatusLine()
 
 
@@ -34,8 +36,12 @@ status = StatusLine()
 # Output SQLite database
 DB = "permits.sqlite"
 
-ALL_FEATURES = data.ALL_FEATURES.keys() + ["parcels_dis"]
+ALL_FEATURES = data.ALL_FEATURES.keys() + data.OTHER_FEATURES
 
+FEATURES_DB = os.path.abspath(
+    os.path.join(".", "data", "permit_features.sqlite"))
+
+PERMIT_TABLES = []
 
 CITY_REPORTS = [os.path.abspath(f) for f in
                 glob("data/city_permits/raw/*.xlsx")]
@@ -115,10 +121,13 @@ def main():
     # =========================================================================
     # BACKUP PERMIT TABLES
     print("Backing up permit tables...")
+    # Get list of PERMIT_TABLES
     cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
     all_ptables = [t[0] for t in cur.fetchall() if "res" in t[0]]
-    permit_tables = [t for t in all_ptables if "_bk" not in t]
-    for table in permit_tables:
+    # Send the permit tables to the global variable declared earlier
+    PERMIT_TABLES.extend([t for t in all_ptables if "_bk" not in t])
+    
+    for table in PERMIT_TABLES:
         status.write("  {}...".format(table))
         if "{}_bk".format(table) not in all_ptables:
             cur.execute("SELECT CloneTable('main', '{0}', '{0}_bk', 1)".format(
@@ -131,42 +140,50 @@ def main():
     # =========================================================================
     # LOAD SPATIAL DATA
     # ATTACH the database containing the spatial data
-    print("Loadin spatial data...")
+    print("Loading spatial data...")
     cur.execute("ATTACH DATABASE '{}' AS permit_features;".format(
-        data.FEATURES_DB))
+        FEATURES_DB))
     # Load/"Clone" each feature -- this is much faster and can comfortably be
     #  done more often than a full data update (i.e. FC2FC)
-    for feature in ALL_FEAURES:
-        status.write("  {}...".format(table))
+    for feature in ALL_FEATURES:
+        status.write("  {}...".format(feature))
         if feature in conn.get_tables():
             status.custom("[SKIP]", "yellow")
             continue
-        sql = "SELECT CloneTable('{1}', '{0}', '{0}', 1);"
-        cur.execute(sql.format(feature, data.FEATURES_DB))
+        sql = "SELECT CloneTable('permit_features', '{0}', '{0}', 1);"
+        cur.execute(sql.format(feature))
+        dslw.utils.reproject(conn, feature, 2256)
         status.success()
 
-    '''
     # =========================================================================
     # SPATIALIZE PERMITS
     print("Spatializing Permits...")
-    for feature in ALL_FEAURES:
-        status.write("  {}...".format(feature))
-        if "geometry" not in conn.get_column_names(feature):
-            cur.execute("SELECT AddGeometryColumn(?, 'geometry', "
-                        "2256, 'MULTIPOINT', 'XY', 0);", (table,))
-            cur.execute(open("tools/density.sql", "r").read().format(table))
+    for table in PERMIT_TABLES:
+        status.write("  {}...".format(table))
+        cur.execute("PRAGMA table_info('{}')".format(table))
+        if "geometry" not in [f[1] for f in cur.fetchall()]:
+            # Call the spatialize.sql script and send it the current table
+            cur.execute(open("tools/spatialize.sql", "r").read().format(table))
+            # TODO: dslw.utils.execute_script(conn, "tools/spatialize.sql", table)
+            cur.fetchall()
             status.success()
         else:
             status.custom("[SKIP]", "yellow")
 
+    # =========================================================================
+    # GENERATE REPORTS
+
+    '''
     status.write("Generating density report...")
     cur.execute(open("tools/density.sql", "r").read())
     status.success()
     '''
-    print("")
-    status.custom("COMPLETE", "cyan")
-    raw_input("Press <Enter> to exit. ")
 
+    # =========================================================================
+    # FINISH
+    status.write("VACUUMing...")
+    cur.execute("VACUUM;")
+    status.success()
 
 if __name__ == "__main__":
     # Show script info
@@ -179,6 +196,9 @@ if __name__ == "__main__":
     # RUN IT!
     try:
         main()
+        print("")
+        status.custom("COMPLETE", "cyan")
+        raw_input("Press <Enter> to exit. ")
     except:
         handle_ex()
 

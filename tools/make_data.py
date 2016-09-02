@@ -62,12 +62,19 @@ def make_db():
 
 def load():
     print("Loading spatial data...")
+    sr = arcpy.SpatialReference(2256)  # Montana St Plane that QGIS can read
     # Load all raw data
     for feature in data.ALL_FEATURES.keys():
         status.write("  {}...".format(feature))
         if feature not in TABLES:
+            # Project layer into memory
+            arcpy.Project_management(
+                data.ALL_FEATURES[feature][0],  # Data path
+                "in_memory/{}".format(feature),
+                sr)
             arcpy.FeatureClassToFeatureClass_conversion(
-                *data.ALL_FEATURES[feature])
+                "in_memory/{}".format(feature),
+                *data.ALL_FEATURES[feature][1:])  # Ouput loc and name
             status.success()
         else:
             status.custom("[SKIP]", "yellow")
@@ -75,11 +82,11 @@ def load():
     # condos_dis
     status.write("  dissolved condos...")
     if "condos_dis" not in TABLES:
-        # Copy layer to memory
-        arcpy.FeatureClassToFeatureClass_conversion(
-            data.SDE_BASE + r"Parcels\SDEFeatures.GIS.All_Condos",
-            "in_memory",
-            "condos")
+        # Project layer into memory
+        arcpy.Project_management(
+                data.SDE_BASE + r"Parcels\SDEFeatures.GIS.All_Condos",
+                "in_memory/condos",
+                sr)
         # Dissolve by townhome/condo name
         arcpy.Dissolve_management(
             "in_memory/condos", "in_memory/condos_dis", "Name")

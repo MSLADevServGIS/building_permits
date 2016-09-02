@@ -10,9 +10,30 @@ SELECT * FROM <permit_table> WHERE geometry IS NULL;
 will need to be delt with manually. Bummer, I know.
 */
 
--- Join on full address (exact match)
+BEGIN;
+
+-- Add geometry column
+SELECT AddGeometryColumn('{0}', 'geometry', 2256, 'MULTIPOINT', 'XY');
+-- Add a condo_project column
+ALTER TABLE {0} ADD COLUMN condo_project TEXT;
+
+
+-- Join on parcel geocode
 UPDATE
-	{0} -- res2015
+	{0} -- permit table
+SET
+	notes = 'geocode',
+	geometry = (
+		SELECT ST_Multi(PointOnSurface(geometry))
+		FROM ufda_parcels u
+		WHERE u.parcelid={0}.geocode)
+WHERE geometry IS NULL;
+
+
+-- Join on full address (exact match)
+-- These addresses do not align perfectly with the city's shifted parcels, fix???
+UPDATE
+	{0} -- permit table
 SET
 	notes = 'fulladdr',
 	geometry = (
@@ -24,10 +45,10 @@ WHERE geometry IS NULL;
 
 -- Join on address geocode
 /* This unintentionally joins permits with all addresses on a parcel giving the permit more geometry
-than it truely deserves, but it should be fine because the points are all within the parcel.
+than it truely deserves, fix???
 */
 UPDATE
-	{0} -- res2015
+	{0} -- permit table
 SET
 	notes = 'a.parcelid',
 	geometry = (
@@ -36,39 +57,27 @@ SET
 		WHERE a.parcelid={0}.geocode)
 WHERE geometry IS NULL;
 
-
--- Join on parcel geocode
-UPDATE
-	{0} -- res2015
-SET
-	notes = 'geocode',
-	geometry = (
-		SELECT ST_Multi(PointOnSurface(geometry))
-		FROM ufda_parcels u
-		WHERE u.parcelid={0}.geocode)
-WHERE geometry IS NULL;
-
-
--- Spatialize the townhome/condos separately (where permit geocode doesn't end in '000')
--- Then update the permit table from the new townhome/condo table
-CREATE TABLE {1} AS
-	SELECT p.address AS address, p.geocode AS geocode, u.parcelid AS parcelid, 
-		ST_Multi(PointOnSurface(u.geometry)) AS geometry
-	FROM res2014 p
-	JOIN parcels_dis u
-		ON u.parcelid LIKE SUBSTR(p.geocode, 0, LENGTH(p.geocode)-3) || '%'
-	WHERE SUBSTR(p.geocode, -4) <> '0000';
-SELECT RecoverGeometryColumn('{1}', 'geometry', 2256, 'MULTIPOINT', 'XY');
+/*
+UPDATE {0} SET geometry = (
+	SELECT ST_Multi(PointOnSurface(u.geometry)) AS geometry
+	FROM {0} p JOIN ufda_parcels u
+	ON p.geocode=u.parcelid
+	WHERE NOT Intersects(p.geometry, u.geometry));
+*/
 
 -- Update the permit table
 UPDATE
 	{0}
 SET
 	notes = 'townhome/condo',
+	condo_project = (
+		SELECT name
+		FROM condos_dis
+		WHERE Intersects(geometry, {0}.geometry)),
 	geometry = (
-		SELECT geometry
-		FROM {1}
-		WHERE geocode = res2014.geocode)
+		SELECT ST_Multi(PointOnSurface(geometry)) AS geometry 
+		FROM condos_dis
+		WHERE Intersects(geometry, {0}.geometry))
 WHERE geometry IS NULL;
 
 
@@ -81,12 +90,12 @@ WHERE geometry IS NULL
 		SELECT permit_number FROM {0});
 
 	
+COMMIT;
 
-	
 	
 /* MISC left-over code I don't just want to throw away
 UPDATE
-	{0} -- res2015
+	{0} -- permit table
 SET
 	notes = 'townhome/condo',
 	geometry = (
