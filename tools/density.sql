@@ -1,4 +1,4 @@
--- 2013
+/*-- 2013
 CREATE TABLE duacs13_temp AS 
 	SELECT p.address AS address, p.geocode AS geocode, SUM(p.dwellings) AS dwellings, 
 	    z.BASE AS zoning, ST_Multi(ST_Collect(p.geometry)) AS geometry 
@@ -65,4 +65,52 @@ CREATE TABLE duacs2015 AS
 SELECT RecoverGeometryColumn('duacs2015', 'geometry', 2256, 'MULTIPOINT', 'XY');
 
 DROP TABLE duacs15_temp;
+*/
 
+
+
+
+
+
+-- Density (duac)
+-- Calc duac including total dwellings and total area of parcels intersecting multi-point permits
+-- E.g. 1500 S 14TH ST (2014) 62 duac
+CREATE TABLE density_2014 AS
+SELECT u.geocode AS geocode, p.address AS address, sum_dwellings, 
+  p.geometry AS geometry,
+  SUM(Area(u.geometry))/43560.0 AS acres, 
+  FLOOR(sum_dwellings/(SUM(Area(u.geometry))/43560.0)) as duac 
+FROM (
+  SELECT DISTINCT permit_number, address, 
+    SUM(DISTINCT dwellings) AS sum_dwellings, 
+	-- Dissolve points
+	ST_Multi(ST_Collect(geometry)) AS geometry 
+  FROM city_res2014 -- {0}
+  GROUP BY permit_number) AS p
+JOIN ufda_parcels u ON Intersects(p.geometry, u.geometry) 
+GROUP BY p.permit_number
+ORDER BY p.address;
+SELECT RecoverGeometryColumn('density_2014', 'geometry', 2256, 'MULTIPOINT', 2);
+
+/*
+-------------------------------------------------------------
+
+
+-- Density by Townhome/Condo Project
+SELECT u.name AS name, p.address AS address, SUM(sum_dwellings) as sum_dwellings,  
+  SUM(Area(u.geometry))/43560.0 AS acres, 
+  FLOOR(SUM(sum_dwellings)/(SUM(Area(u.geometry))/43560.0)) as duac 
+FROM (
+  SELECT DISTINCT permit_number, address, 
+    SUM(DISTINCT dwellings) AS sum_dwellings, 
+	-- Dissolve points
+	ST_Multi(ST_Collect(geometry)) AS geometry 
+  FROM city_res2014 
+  GROUP BY permit_number) AS p
+JOIN condos_dis u ON Intersects(p.geometry, u.geometry) 
+GROUP BY u.name;
+
+
+
+
+*/

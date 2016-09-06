@@ -153,7 +153,25 @@ def main():
         sql = "SELECT CloneTable('permit_features', '{0}', '{0}', 1);"
         cur.execute(sql.format(feature))
         dslw.utils.reproject(conn, feature, 2256)
+        cur.execute("SELECT CreateSpatialIndex('{}', 'geometry');".format(
+            feature))
         status.success()
+
+    # =========================================================================
+    # CREATE AND POPULATE overrides TABLE
+    status.write("Populating overrides...")
+    ovr_create = ("CREATE TABLE overrides (permit_number TEXT, "
+                  "address TEXT, geocode TEXT);")
+    if "overrides" not in TABLES:
+        cur.execute(ovr_create)
+    insert_sql = "INSERT INTO overrides VALUES ('{0}', '{1}', '{2}');"
+    for line in open("data/overrides.txt", 'r').readlines():
+        line = line.strip()
+        try:
+            cur.execute(insert_sql.format(*line.split(", ")))
+        except dslw.apsw.SQLError:
+            pass
+    status.success()
 
     # =========================================================================
     # SPATIALIZE PERMITS

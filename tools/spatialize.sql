@@ -18,9 +18,23 @@ SELECT AddGeometryColumn('{0}', 'geometry', 2256, 'MULTIPOINT', 'XY');
 ALTER TABLE {0} ADD COLUMN condo_project TEXT;
 
 
+-- Apply overrides to permit table
+UPDATE {0}
+SET 
+    geocode = (
+        SELECT geocode 
+        FROM overrides 
+        WHERE overrides.permit_number = {0}.permit_number)
+WHERE permit_number IN (
+    SELECT o.permit_number 
+    FROM overrides o
+    WHERE o.permit_number = {0}.permit_number);
+DELETE FROM {0}
+  WHERE geocode = 'REMOVE';
+
+
 -- Join on parcel geocode
-UPDATE
-	{0} -- permit table
+UPDATE {0} -- permit table
 SET
 	notes = 'geocode',
 	geometry = (
@@ -63,9 +77,9 @@ UPDATE {0} SET geometry = (
 	FROM {0} p JOIN ufda_parcels u
 	ON p.geocode=u.parcelid
 	WHERE NOT Intersects(p.geometry, u.geometry));
-*/
 
--- Update the permit table
+
+-- Get the Townhome/Condo points I beleive this is wrong -- causes join with NULL geometries
 UPDATE
 	{0}
 SET
@@ -79,7 +93,7 @@ SET
 		FROM condos_dis
 		WHERE Intersects(geometry, {0}.geometry))
 WHERE geometry IS NULL;
-
+*/
 
 -- Cleanup
 -- DELETE any null geometries that exist where the permit number has already been mapped
@@ -89,7 +103,9 @@ WHERE geometry IS NULL
 	AND permit_number IN (
 		SELECT permit_number FROM {0});
 
-	
+
+SELECT CreateSpatialIndex('{0}', 'geometry');
+
 COMMIT;
 
 	
