@@ -1,3 +1,82 @@
+/* Density (duac) calculations
+Inputs:
+{0}: res<year> table -- input permit table
+{1}: new density<year> table -- final permit product for mapping/analysis
+{2}: new th_dev<year> table -- townhouse development
+*/
+
+-- Calc duac including total dwellings and total area of parcels intersecting multi-point permits
+-- E.g. 1500 S 14TH ST (2014) 62 duac
+CREATE TABLE {1} (
+  permit_number TEXT PRIMARY KEY,
+  geocode TEXT,
+  address TEXT,
+  sum_dwellings INTEGER,
+  acres REAL,
+  duac REAL,
+  condo_proj TEXT,
+  geometry MULTIPOINT);
+
+INSERT INTO {1} SELECT * FROM (
+  SELECT 
+	permit_number,
+    u.geocode AS geocode, 
+    p.address AS address,
+	sum_dwellings, 
+    SUM(Area(u.geometry))/43560.0 AS acres, 
+    FLOOR(sum_dwellings/(SUM(Area(u.geometry))/43560.0)) as duac,
+	c.name AS condo_proj,
+	p.geometry AS geometry
+  FROM (
+      SELECT DISTINCT permit_number, address, 
+        SUM(DISTINCT dwellings) AS sum_dwellings, 
+	    -- Dissolve points
+	    ST_Multi(ST_Collect(geometry)) AS geometry 
+      FROM {0}   
+      GROUP BY permit_number) AS p
+  JOIN ufda_parcels u ON Intersects(p.geometry, u.geometry) 
+  LEFT JOIN condos_dis c ON Intersects(p.geometry, c.geometry) 
+  GROUP BY p.permit_number
+  ORDER BY p.address);
+SELECT RecoverGeometryColumn('{1}', 'geometry', 2256, 'MULTIPOINT', 2);
+
+
+-- Make a table to track townhome (th) / condo development activity
+CREATE TABLE {2} (
+  name TEXT,
+  sum_dwellings INTEGER,
+  acres REAL,
+  proj_duac REAL);
+
+INSERT INTO {2} SELECT * FROM (
+  SELECT c.name AS name,  
+    SUM(sum_dwellings) as sum_dwellings, 
+    SUM(Area(c.geometry))/43560.0 AS acres, 
+    FLOOR(SUM(sum_dwellings)/(SUM(Area(c.geometry))/43560.0)) AS proj_duac  
+  FROM {1} d 
+  JOIN condos_dis c 
+  ON Intersects(d.geometry, c.geometry) 
+  GROUP BY c.name);
+
+
+-- Change the incorrectly calculated townhome/condo duacs
+UPDATE {1}  
+SET duac = (
+    SELECT proj_duac
+	FROM {2} t
+	JOIN {1} d ON t.name = d.condo_proj)
+WHERE condo_proj IS NOT NULL;
+
+-- Taking the FLOOR of 0.x results in 0.0, when really it should be 1.0
+UPDATE {1} 
+SET duac = 1.0 
+WHERE duac = 0.0;
+
+UPDATE {2} 
+SET proj_duac = 1.0 
+WHERE proj_duac = 0.0;
+
+
 /*-- 2013
 CREATE TABLE duacs13_temp AS 
 	SELECT p.address AS address, p.geocode AS geocode, SUM(p.dwellings) AS dwellings, 
@@ -67,36 +146,8 @@ SELECT RecoverGeometryColumn('duacs2015', 'geometry', 2256, 'MULTIPOINT', 'XY');
 DROP TABLE duacs15_temp;
 */
 
-
-
-
-
-
--- Density (duac)
--- Calc duac including total dwellings and total area of parcels intersecting multi-point permits
--- E.g. 1500 S 14TH ST (2014) 62 duac
-CREATE TABLE density_2014 AS
-SELECT u.geocode AS geocode, p.address AS address, sum_dwellings, 
-  p.geometry AS geometry,
-  SUM(Area(u.geometry))/43560.0 AS acres, 
-  FLOOR(sum_dwellings/(SUM(Area(u.geometry))/43560.0)) as duac 
-FROM (
-  SELECT DISTINCT permit_number, address, 
-    SUM(DISTINCT dwellings) AS sum_dwellings, 
-	-- Dissolve points
-	ST_Multi(ST_Collect(geometry)) AS geometry 
-  FROM city_res2014 -- {0}
-  GROUP BY permit_number) AS p
-JOIN ufda_parcels u ON Intersects(p.geometry, u.geometry) 
-GROUP BY p.permit_number
-ORDER BY p.address;
-SELECT RecoverGeometryColumn('density_2014', 'geometry', 2256, 'MULTIPOINT', 2);
-
 /*
 -------------------------------------------------------------
-
-
--- Density by Townhome/Condo Project
 SELECT u.name AS name, p.address AS address, SUM(sum_dwellings) as sum_dwellings,  
   SUM(Area(u.geometry))/43560.0 AS acres, 
   FLOOR(SUM(sum_dwellings)/(SUM(Area(u.geometry))/43560.0)) as duac 
@@ -109,8 +160,4 @@ FROM (
   GROUP BY permit_number) AS p
 JOIN condos_dis u ON Intersects(p.geometry, u.geometry) 
 GROUP BY u.name;
-
-
-
-
 */
