@@ -39,3 +39,35 @@ Double-click the "make_permit_db.py" script to create the "permits.sqlite" datab
 	b.  A system environment called `SPATIALITE_SECURITY` set to `relaxed`  
 2. The specific file structure of the [bulding_permits](https://github.com/MSLADevServGIS/building_permits) project  
 3. Correct data paths set in the `data.py` script  
+
+
+# Data Dictionary
+What are all these files?  
+
+---
+#### `*.sqlite`:
+a [SQLite database file](https://www.sqlite.org/about.html); can be read and queried with:  
+    1. dslw_shell.py - Shortcut  
+    2. QGIS  
+    3. ArcGIS  
+
+__NOTE__: the GIS programs change some datatypes (e.g. geocode becomes a LONG INT)  
+
+
+__permits.sqlite__ contains the pre- and post- processed building permits for the City of Missoula  
+__permit\_features.sqlite__ contains the collected spatial data from the sources specified in `data\_sources.yaml`  (coming soon)  
+
+---
+#### `*.py`:
+a Python file; text file that can be executed via cmd.exe and (sometimes) double-clicking.  
+
+---
+#### `*.md`:
+a [Markdown](https://daringfireball.net/projects/markdown/) file; simple-to-write plain text that gets rendered to HTML  
+
+---
+#### `.git`, `.gitignore`, other git files:  
+Git and GitHub are used to version and store open source software on the web; necessary, but can be ignored by users.  
+
+# TODO:
+move the list of data sources from `data.py` to a `.yaml` file  

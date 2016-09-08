@@ -12,11 +12,14 @@ import os
 import re
 from glob import glob
 
+import yaml
+
 
 # =============================================================================
 # DATA
 
 FEATURES_DB = os.path.realpath("../data/permit_features.sqlite")
+FEATURES_DB = FEATURES_DB.replace("\\", "/")
 
 # Input geodatabase and featureclass paths
 NETWORK_BASE = r"\\cityfiles\DEVServices\ArcExplorer\Data"
@@ -24,6 +27,14 @@ SDE_BASE = r"Database Connections\Features.sde\SDEFeatures.GIS."
 
 # Dictionary of tuples that will be unpacked by '*' into arguments for
 #  FeatureClassToFeatureClass_management()
+ALL_FEATURES = yaml.load(
+    open(os.path.abspath("../data/data_sources.yaml"), "r"))
+# Add the database name as the second (index 1) item in the list
+for key in ALL_FEATURES.keys():
+    ALL_FEATURES[key].insert(1, FEATURES_DB)
+
+# TODO: remove the old data sources
+'''
 ALL_FEATURES = {
     
     "ufda_parcels": (
@@ -59,6 +70,7 @@ ALL_FEATURES = {
         FEATURES_DB,
         "ufda_zoning")
     }
+'''
 
 # Include derrived data
 OTHER_FEATURES = [

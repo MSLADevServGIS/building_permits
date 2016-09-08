@@ -1,0 +1,38 @@
+# data_sources.yaml -- This file gets read into Python as a dictionary
+# Author: Garin Wally; Sept 2016
+#
+# How to use this file:
+# feature name: [
+#    <path/to/data/using/forward/slashes>, don't forget the comma
+#    <feature_name> yes, again
+#    ]
+#
+# NOTE:
+# DO NOT use tabs, use four spaces!
+# Use this website to validate: https://yaml-online-parser.appspot.com/
+# 
+
+ufda_addrs: [
+    //cityfiles/DEVServices/ArcExplorer/Data/Structures/Address.gdb/AddressStructurePoint_ft,
+    ufda_addrs
+    ]
+
+gp_bounds: [
+    //cityfiles/DEVServices/ArcExplorer/Data/GrowthPolicy2014/Data/LandUseMap_dist.gdb/BaseFeatures/GrowthPolicy_boundary,
+    gp_bounds
+    ]
+
+ufda_nhoods: [
+    //cityfiles/DEVServices/WallyG/projects/small_projects/for_DaveGray/Transpo_update_housing/UFDA_bound_update.gdb/UFDA_cleaned,
+    ufda_nhoods
+    ]
+
+ufda_parcels: [
+    Database Connections\Features.sde\SDEFeatures.GIS.Parcels\SDEFeatures.GIS.Parcels,
+    ufda_parcels
+    ]
+
+ufda_zoning: [
+    //cityfiles/DEVServices/WallyG/projects/zoning_updates/data/MASTER_MSLAZONE.gdb/updates/MSLAZONE,
+    ufda_zoning
+    ]
