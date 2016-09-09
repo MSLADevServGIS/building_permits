@@ -27,12 +27,22 @@ ufda_nhoods: [
     ufda_nhoods
     ]
 
-ufda_parcels: [
-    Database Connections\Features.sde\SDEFeatures.GIS.Parcels\SDEFeatures.GIS.Parcels,
-    ufda_parcels
-    ]
-
 ufda_zoning: [
     //cityfiles/DEVServices/WallyG/projects/zoning_updates/data/MASTER_MSLAZONE.gdb/updates/MSLAZONE,
     ufda_zoning
+    ]
+
+council_dists: [
+    Database Connections/Features.sde/SDEFeatures.GIS.District_Jurisdictions/SDEFeatures.GIS.NH_Council_Boundaries,
+    council_dists
+    ]
+
+ufda_parcels: [
+    Database Connections/Features.sde/SDEFeatures.GIS.Parcels/SDEFeatures.GIS.Parcels,
+    ufda_parcels
+    ]
+
+condos: [
+    Database Connections/Features.sde/SDEFeatures.GIS.Parcels/SDEFeatures.GIS.All_Condos,
+    condos
     ]

@@ -1,48 +1,29 @@
--- All multidwelling development
-SELECT DISTINCT SUM(DISTINCT dwellings) AS units, address 
-FROM city_res2013 
-GROUP BY permit_number, geocode 
-HAVING units >= 3
+-- All Multidwelling Development by Nhood
+CREATE TABLE all_multidev (nhood_name TEXT, sum_dwellings INTEGER);
+-- Populate table
+INSERT INTO all_multidev
+  SELECT name, sum(sum_dwellings) FROM (
 
-UNION 
+    -- Copy/paste this for individual projects
+    SELECT d.address AS address, d.sum_dwellings AS sum_dwellings, n.name AS name 
+    FROM density2014 d 
+    JOIN council_dists n ON Intersects(d.geometry, n.geometry) 
+    WHERE d.sum_dwellings >= 3 
 
-SELECT DISTINCT SUM(DISTINCT dwellings) AS units, address 
-FROM city_res2014 
-GROUP BY permit_number, geocode 
-HAVING units >= 3
+    UNION 
 
-UNION 
+    SELECT d.address AS address, d.sum_dwellings AS sum_dwellings, n.name AS name 
+    FROM density2015 d 
+    JOIN council_dists n ON Intersects(d.geometry, n.geometry) 
+    WHERE d.sum_dwellings >= 3 
 
-SELECT DISTINCT SUM(DISTINCT dwellings) AS units, address 
-FROM city_res2015 
-GROUP BY permit_number, geocode 
-HAVING units >= 3
+    UNION 
 
-ORDER BY units DESC;
---
+    SELECT d.address AS address, d.sum_dwellings AS sum_dwellings, n.name AS name 
+    FROM density2016 d 
+    JOIN council_dists n ON Intersects(d.geometry, n.geometry) 
+    WHERE d.sum_dwellings >= 3 
 
---------------------------------
--- All multidwelling development
-SELECT DISTINCT SUM(DISTINCT p.dwellings) AS units, p.address, AREA(u.geometry)/43560.0 AS acres 
-FROM city_res2013 p 
-JOIN ufda_parcels u 
-GROUP BY p.permit_number, p.geocode 
-HAVING units >= 3;
-
-UNION 
-
-SELECT DISTINCT SUM(DISTINCT dwellings) AS units, address 
-FROM city_res2014 
-GROUP BY permit_number, geocode 
-HAVING units >= 3
-
-UNION 
-
-SELECT DISTINCT SUM(DISTINCT dwellings) AS units, address 
-FROM city_res2015 
-GROUP BY permit_number, geocode 
-HAVING units >= 3
-
-ORDER BY units DESC;
---
-
+    ORDER BY n.name
+) 
+  GROUP BY name;

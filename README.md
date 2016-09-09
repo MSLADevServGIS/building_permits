@@ -5,7 +5,7 @@
   a. Download it from [here](https://shared.missoulacounty.us/index.php/s/7WZBWx8yXkab256)  
   b. Manually reproject it from meters to ft (102700: MT State Plane FIPS Ft)   
   c. I've been saving it to  `\\cityfiles\DEVServices\ArcExplorer\Data\Structures\Address.gdb\AddressStructurePoint_ft`  
-2. Check the data paths inside the `data.py` script  
+2. Check the data paths inside the `data_sources.yaml` file  
 3. Run the data.py script and wait a long, long time...  
 
 ## Permits

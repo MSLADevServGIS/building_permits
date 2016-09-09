@@ -4,7 +4,7 @@ import unittest
 
 import dslw
 
-from tkit.cli import handle_ex
+from aside import handle_ex
 
 import data
 

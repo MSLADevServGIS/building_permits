@@ -22,12 +22,10 @@ from glob import glob
 import pandas as pd
 
 import dslw
-from tkit.cli import StatusLine, handle_ex
+from aside import status, handle_ex
 
 from tools import data
 from tools import process
-
-status = StatusLine()
 
 
 # =============================================================================

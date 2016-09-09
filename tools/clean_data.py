@@ -10,11 +10,9 @@ of SQL statements that fix the tables created by arcpy.FC2FC.
 """
 
 import dslw
-from tkit.cli import StatusLine, handle_ex, nix, wait
+from aside import status, handle_ex, nix, wait
 
 import data
-
-status = StatusLine()
 
 
 # =============================================================================
@@ -32,6 +30,7 @@ def main():
         status.write("  normalizing {}...".format(feature))
         geo_col = dslw.utils.get_geo_column(conn, feature)
         dslw.utils.normalize_table(conn, feature, geo_col, 102700)
+        dslw.utils.reproject(conn, feature, 2256)
         status.success()
 
 

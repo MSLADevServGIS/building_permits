@@ -1,0 +1,50 @@
+How I'm collecting new "residential" units
+
+1. All building permits for a time range (1 calendar year) are pulled
+2. The permit types below are kept:
+    'BNMRA': "New Multifamily 3-4 Units"	# Commercial Construction type
+    'BNMRB': "New Multifamily 5+ Units"		# Commercial Construction type
+    'BNCON': "New Other"			# Sometimes used for mixed use,  Commercial
+    'BNRDX': "New Duplex"
+    'BNSFR': "New Single Family Residence"
+    'BNSFT': "New Single Family Townhouse"
+    'BNROS': "New Shelter/Dorm/Etc"
+    '':      "None specified" 			# Blank
+    'None':  "None specified"
+3. The filter works as follows:
+a. MultiFamily:
+	"Number Of Dwelling Units" >= 3 AND construction_type = "Commercial Construction" 
+
+b. Single Family & Duplex
+	subtype in the above list and dwellings >= 1
+
+
+My proposed changes:
+1. The "Number Of Dwelling Units" field should reflect the actual number of dwelling units,
+  not carports, commercial units, etc.
+  e.g. why would a duplex have 3 units?
+  if you really want to count carports and business shells, don't use a res subtype
+
+2. Not use BNCON for residential buildling types -- can count shell units
+
+3. Maybe a new subtype is added ("BNCMU"?) used only for mixed use buildings; counts only DU
+
+
+BNCON problems:
+
+Potter Park 4-plexes
+Sometimes mixed use buildings (e.g. Dearborn, Cambium Place, etc)
+
+
+My model catches:
+2016-MSS-COM-00086, "Custom Birdworks", 1 dwelling unit		-bad, shouldn't have DU
+2016-MSS-COM-00135, "Dearborn Apts", 25 du			-good
+2015-MSS-COM-00305, "Riverside Self Storage", 1 du		-bad, shouldn't have DU
+2015-MSS-COM-00182, "Carport", 1 du				-bad, shouldn't have DU
+
+Doesn't catch:
+2016-MSS-COM-00092, "Bargreen Warehouse", 0 dwelling units	-good
+2015-MSS-COM-00357, "645 JOHNSON ST", 3 unit Duplex + SFR	-bad, should catch new units
+-- I shouldn't have to parse the Description field
+
+

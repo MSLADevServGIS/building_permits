@@ -1,0 +1,56 @@
+Address|Dwellings|Neighborhood
+3800 O'LEARY ST|39|Captain John Mullan
+3840 O'LEARY ST|36|Captain John Mullan
+4100 MULLAN RD   #509|24|Captain John Mullan
+1725 S 3RD ST W|6|Franklin to the Fort
+1745 S 3RD ST W|4|Franklin to the Fort
+1755 S 3RD ST W|4|Franklin to the Fort
+1839 S 09TH ST|6|Franklin to the Fort
+1840 S 5TH ST W|3|Franklin to the Fort
+1928 S 5TH ST W|3|Franklin to the Fort
+1936 S 5TH ST W|4|Franklin to the Fort
+1936 S 8TH ST W|3|Franklin to the Fort
+1940 S 8TH ST W|3|Franklin to the Fort
+2005 S 4TH ST W|4|Franklin to the Fort
+2005 W CENTRAL AVE|18|Franklin to the Fort
+2233 SOUTH AVE W|4|Franklin to the Fort
+2241 S 3RD ST W  #101|6|Franklin to the Fort
+2245 SOUTH AVE W|4|Franklin to the Fort
+2247 S 3RD ST W|4|Franklin to the Fort
+2253 S 3RD ST W|4|Franklin to the Fort
+2259-A S 3RD ST W|4|Franklin to the Fort
+2305 MOUNT AVE|4|Franklin to the Fort
+555 S CATLIN ST|60|Franklin to the Fort
+4931 POTTER PARK LP|4|Grant Creek
+4939 POTTER PARK LP|4|Grant Creek
+4947 POTTER PARK LP|4|Grant Creek
+4955 POTTER PARK LP|4|Grant Creek
+4963 POTTER PARK LP|4|Grant Creek
+1410 WORDEN AVE|14|Northside
+630 N 05TH ST W|9|Northside
+813 CHARLO ST|4|Northside
+819 CHARLO ST|4|Northside
+825 CHARLO ST|4|Northside
+831 CHARLO ST|4|Northside
+909 CHARLO ST|4|Northside
+1905 TRAIL ST|14|River Road
+1915 TRAIL ST|12|River Road
+1940 TRAIL ST|8|River Road
+110 S CALIFORNIA ST|6|Riverfront
+1137 MONTANA ST|26|Riverfront
+1269 DAKOTA ST|3|Riverfront
+1347 DAKOTA ST|8|Riverfront
+210 N CALIFORNIA ST|24|Riverfront
+875 WYOMING ST|20|Riverfront
+945 WYOMING ST|69|Riverfront
+2210 BOW ST|6|Rose Park
+740 W SUSSEX AVE|3|Rose Park
+744 W SUSSEX AVE|3|Rose Park
+748 W SUSSEX AVE|3|Rose Park
+950 MOUNT AVE|13|Rose Park
+1500 S 14TH ST|63|Southgate Triangle
+4015 RUSSELL ST|22|Southgate Triangle
+2625 DEARBORN AVE  #201|25|West Reserve
+2550 GREAT NORTHERN AVE|36|Westside
+2875 LATIMER ST|18|Westside
+2885 LATIMER ST|21|Westside

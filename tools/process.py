@@ -17,6 +17,7 @@ CITY_OUT = "data/city_permits/processed/city_res{}.csv"
 res_codes = {
     'BNMRA': "New Multifamily 3-4 Units",
     'BNMRB': "New Multifamily 5+ Units",  # Technically COM permit
+    'BNCON': "New Other",  # Mixed use
     'BNRDX': "New Duplex",
     'BNSFR': "New Single Family Residence",
     'BNSFT': "New Single Family Townhouse",
@@ -26,11 +27,11 @@ res_codes = {
     }
 
 com_codes = {
+    'BNCON': "New Other",  # Mixed use, see res_codes
     'BNCOP': "New Office/Bank/Professional Building",
     'BNCSC': "New Store/Customer Service",
     'BNCSS': "New Service Station/Repair Garage",
     'BNCID': "New Industrial",
-    'BNCON': "New Other",
     'BNRHM': "New Hotel/Motel/Cabin",
     'BO/S/C': "Other Commercial"
     }
@@ -144,11 +145,16 @@ def city_permits(all_permits):
     all_const['geocode'] = all_const['geocode'].apply(lambda x: str(x))
 
     # Deal with non-unique addresses ...wait what?
-    all_const['address'] = all_const['address'].apply(
-        lambda x: x.split(" #")[0].strip())
+    #all_const['address'] = all_const['address'].apply(
+    #    lambda x: x.split(" #")[0].strip())
 
-    # Add City column to improve geocoding results
+    # Add City column to improve geocoding results -- not used anymore
     all_const["city"] = "Missoula"
+    
+    # Select all records that don't have 'MSTR' in the address
+    all_const = all_const[~all_const.address.str.contains("MSTR")]
+    
+    # Sort data
     all_const = all_const.sort(["permit_number", "address", "dwellings"])
 
     # =========================================================================
@@ -173,7 +179,8 @@ def city_permits(all_permits):
     res_const = all_const[
         # Get permits with >= 3 units filed as commercial
         ((all_const["dwellings"] >= 3) &
-            (all_const["construction_type"] == "Commercial Construction")) |
+         (all_const["construction_type"] == "Commercial Construction") &
+         (all_const["permit_type"].isin(res_codes.keys()))) |
         # Get residential construction of only listed subtypes and
         #   dwellings >= 1
         ((all_const["permit_type"].isin(res_codes.keys()) &

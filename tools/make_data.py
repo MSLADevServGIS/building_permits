@@ -26,18 +26,16 @@ import pandas as pd
 # NOTE: arcpy must be imported after the dslw.SpatialDB connection is made!
 
 import dslw
-from tkit.cli import StatusLine, handle_ex, nix, nix_decorator, wait
+from aside import status, handle_ex, nix, nix_process, wait
 
 import data
-
-status = StatusLine()
 
 
 # =============================================================================
 # UTILITIES
 
 
-@nix_decorator
+@nix_process
 def make_db():
     """Makes the sqlite db.
     Msg:
@@ -61,20 +59,20 @@ def make_db():
 
 
 def load():
+    # NOTE: you cannot project data into in_memory!
     print("Loading spatial data...")
-    sr = arcpy.SpatialReference(2256)  # Montana St Plane that QGIS can read
+    #sr = arcpy.SpatialReference(2256)  # Montana St Plane that QGIS can read
     # Load all raw data
     for feature in data.ALL_FEATURES.keys():
         status.write("  {}...".format(feature))
         if feature not in TABLES:
             # Project layer into memory
-            arcpy.Project_management(
-                data.ALL_FEATURES[feature][0],  # Data path
-                "in_memory/{}".format(feature),
-                sr)
+            #arcpy.Project_management(
+            #    data.ALL_FEATURES[feature][0],  # Data path
+            #    "in_memory/{}".format(feature),
+            #    sr)
             arcpy.FeatureClassToFeatureClass_conversion(
-                "in_memory/{}".format(feature),
-                *data.ALL_FEATURES[feature][1:])  # Ouput loc and name
+                *data.ALL_FEATURES[feature])  # Ouput loc and name
             status.success()
         else:
             status.custom("[SKIP]", "yellow")
@@ -82,14 +80,9 @@ def load():
     # condos_dis
     status.write("  dissolved condos...")
     if "condos_dis" not in TABLES:
-        # Project layer into memory
-        arcpy.Project_management(
-                data.SDE_BASE + r"Parcels\SDEFeatures.GIS.All_Condos",
-                "in_memory/condos",
-                sr)
         # Dissolve by townhome/condo name
         arcpy.Dissolve_management(
-            "in_memory/condos", "in_memory/condos_dis", "Name")
+            data.ALL_FEATURES["condos"][0], "in_memory/condos_dis", "Name")
         # Copy to the output database
         arcpy.FeatureClassToFeatureClass_conversion(
             "in_memory/condos_dis", data.FEATURES_DB, "condos_dis")

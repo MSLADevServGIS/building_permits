@@ -24,6 +24,10 @@ SET
     geocode = (
         SELECT geocode 
         FROM overrides 
+        WHERE overrides.permit_number = {0}.permit_number),
+    address = (
+        SELECT address 
+        FROM overrides 
         WHERE overrides.permit_number = {0}.permit_number)
 WHERE permit_number IN (
     SELECT o.permit_number 
