@@ -1,0 +1,27 @@
+TODO:
+remove 'Accela_permits/' from data
+when the new GIS server is up, the links should work from ANYWHERE!
+
+refactor:
+lint
+document
+modularize (break up main())
+rename process/
+  __init__.py
+  permits.py
+  gis_runner.py (?)
+    data.py
+    clean_data.py
+
+
+Test:
+process:
+    columns
+
+data:
+  Charlo Apts
+  4100 Mullan
+  the 3-parceled one
+  no data loss
+  raymond parcel split
+

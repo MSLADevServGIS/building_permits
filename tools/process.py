@@ -51,7 +51,7 @@ pub_codes = {
 
 CNTY_OUT = "data/county_permits/processed/cnty_res{}.csv"
 
-CITIES = ["missoula", "bonner", "huson"]
+CITIES = ["missoula", "bonner"]  # TODO: Lolo, French Town, Piltzville???
 
 UNITS = {
     "sfr": 1,

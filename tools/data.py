@@ -35,45 +35,6 @@ ALL_FEATURES = yaml.load(open(DATA_SOURCES, "r"))
 for key in ALL_FEATURES.keys():
     ALL_FEATURES[key].insert(1, FEATURES_DB)
 
-# TODO: remove the old data sources
-'''
-ALL_FEATURES = {
-    
-    "ufda_parcels": (
-        SDE_BASE + r"Parcels\SDEFeatures.GIS.Parcels",
-        FEATURES_DB,
-        "ufda_parcels"),
-
-    "ufda_addrs": (
-        os.path.join(
-            NETWORK_BASE,
-            r"Structures\Address.gdb\AddressStructurePoint_ft"),
-        FEATURES_DB,
-        "ufda_addrs"),
-
-    "gp_bounds": (  # TODO: move to SDE
-        os.path.join(
-            NETWORK_BASE,
-            (r"GrowthPolicy2014\Data\LandUseMap_dist.gdb\BaseFeatures"
-             r"\GrowthPolicy_boundary")),
-        FEATURES_DB,
-        "gp_bounds"),
-
-    "ufda_nhoods": (  # TODO: move to SDE
-        (r"\\cityfiles\DEVServices\WallyG\projects\small_projects"
-         r"\for_DaveGray\Transpo_update_housing"
-         r"\UFDA_bound_update.gdb\UFDA_cleaned"),
-        FEATURES_DB,
-        "ufda_nhoods"),
-
-    "ufda_zoning": (
-        (r"\\cityfiles\DEVServices\WallyG\projects\zoning_updates\data"
-         r"\MASTER_MSLAZONE.gdb\updates\MSLAZONE"),
-        FEATURES_DB,
-        "ufda_zoning")
-    }
-'''
-
 # Include derrived data
 OTHER_FEATURES = [
     "condos_dis"
