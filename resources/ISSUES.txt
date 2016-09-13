@@ -32,7 +32,7 @@ My proposed changes:
 
 BNCON problems:
 
-Potter Park 4-plexes
+Potter Park 4-plex garages read as units
 Sometimes mixed use buildings (e.g. Dearborn, Cambium Place, etc)
 
 
