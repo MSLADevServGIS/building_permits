@@ -22,6 +22,7 @@ res_codes = {
     'BNSFR': "New Single Family Residence",
     'BNSFT': "New Single Family Townhouse",
     'BNROS': "New Shelter/Dorm/Etc",
+    'BAARC': "Add/Alter/Remodel Commercial",
     '': "None specified",
     'None': "None specified"
     }

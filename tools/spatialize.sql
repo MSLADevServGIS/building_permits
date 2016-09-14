@@ -102,10 +102,10 @@ WHERE geometry IS NULL;
 -- Cleanup
 -- DELETE any null geometries that exist where the permit number has already been mapped
 -- Example: 2250 RAYMOND AVE merged their parcel so the second doesn't exist
-DELETE FROM {0}
-WHERE geometry IS NULL
-	AND permit_number IN (
-		SELECT permit_number FROM {0});
+--DELETE FROM {0}
+--WHERE geometry IS NULL
+--	AND permit_number IN (
+--		SELECT permit_number FROM {0});
 
 
 SELECT CreateSpatialIndex('{0}', 'geometry');

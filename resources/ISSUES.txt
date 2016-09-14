@@ -40,11 +40,10 @@ My model catches:
 2016-MSS-COM-00086, "Custom Birdworks", 1 dwelling unit		-bad, shouldn't have DU
 2016-MSS-COM-00135, "Dearborn Apts", 25 du			-good
 2015-MSS-COM-00305, "Riverside Self Storage", 1 du		-bad, shouldn't have DU
-2015-MSS-COM-00182, "Carport", 1 du				-bad, shouldn't have DU
 
 Doesn't catch:
-2016-MSS-COM-00092, "Bargreen Warehouse", 0 dwelling units	-good
-2015-MSS-COM-00357, "645 JOHNSON ST", 3 unit Duplex + SFR	-bad, should catch new units
--- I shouldn't have to parse the Description field
+2015-MSS-COM-00357, "645 JOHNSON ST", SFR + New Duplex	-bad, should catch new units
+BAARC -- Model does not currently gather this type
+
 
 
