@@ -3,7 +3,7 @@ __pycache__/
 *.py[co]
 *.zip
 *.mxd
-*.sqlite
+#*.sqlite
 *.lnk
 
 *.lock

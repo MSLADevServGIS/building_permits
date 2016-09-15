@@ -2,7 +2,7 @@
 CREATE TABLE all_multidev (nhood_name TEXT, sum_dwellings INTEGER);
 -- Populate table
 INSERT INTO all_multidev
-  SELECT name, sum(sum_dwellings) FROM (
+  SELECT name, sum(sum_dwellings) AS sum_dwellings FROM (
 
     -- Copy/paste this for individual projects
     SELECT d.address AS address, sum(d.sum_dwellings) AS sum_dwellings, n.name AS name 

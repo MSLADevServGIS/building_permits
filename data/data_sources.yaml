@@ -33,16 +33,16 @@ ufda_zoning: [
     ]
 
 council_dists: [
-    Database Connections/Features.sde/SDEFeatures.GIS.District_Jurisdictions/SDEFeatures.GIS.NH_Council_Boundaries,
+    Database Connections/gisrep.sde/gisrep.SDE.AdministrativeArea/gisrep.SDE.NH_Council_Boundaries,
     council_dists
     ]
 
 ufda_parcels: [
-    Database Connections/Features.sde/SDEFeatures.GIS.Parcels/SDEFeatures.GIS.Parcels,
+    Database Connections/gisrep.sde/gisrep.SDE.Parcels/gisrep.SDE.Parcels,
     ufda_parcels
     ]
 
 condos: [
-    Database Connections/Features.sde/SDEFeatures.GIS.Parcels/SDEFeatures.GIS.All_Condos,
+    Database Connections/gisrep.sde/gisrep.SDE.Parcels/gisrep.SDE.All_Condos,
     condos
     ]

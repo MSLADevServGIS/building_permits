@@ -18,7 +18,7 @@ import yaml
 # =============================================================================
 # DATA
 
-FEATURES_DB = os.path.realpath("../data/permit_features.sqlite")
+FEATURES_DB = os.path.abspath("./data/permit_features.sqlite")
 FEATURES_DB = FEATURES_DB.replace("\\", "/")
 
 DATA_SOURCES = ("//cityfiles/DEVServices/WallyG/projects"
