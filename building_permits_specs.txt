@@ -1,7 +1,7 @@
 PERMITS
 The permits.py script should rely on a Python package supported by a setup.py script
   and available on GitHub.com. Thus, installation for anyone ever will consist of:
-  1. downloading the package from github
+  1. download/clone the package from github
   2. unzipping the contents
   3. run `python setup.py install` at the commandline in that directory
 
@@ -12,23 +12,27 @@ All commandline arguments assume the database already exists and will modify it,
   except the --reset option which backs-up and recreates the database from scratch.
 This is because the database should be maintained rather than recreated every year.
 
-"the model" includes the downloading, processing, and spatialization processes
-
-
-Realism: we will never need options for only downloading, processing, or spatializing
-  data by year
+"the model" includes the downloading, processing, and spatialization processes. It is
+run with every "appended" year or with each year in a range. We should never need
+options for separately downloading, processing, or spatializing data by year.
 
 
 Most frequently used arguments:
 -------------------------------
 
-permits.py --append <year>
+permits.py <year>
     Run the model for city permit data for the calendar year of <year>
 
-permits.py --county <year>
+permits.py <year> --county
     Process (county method) and spatialize previously received County data for <year>
-    - filename must contain the year
+    - filename of county data must contain the year
 
+permits.py --update
+    Drops the processing geometries and reloads them with the expectation that
+      they've been updated.
+
+permits.py --report
+    Creates the reports
 
 
 Other arguments:
@@ -43,49 +47,18 @@ permits.py --from 2013 --to 2015
     Run the model for a specified range of years
     Maybe useless?
 
+permits.py --from 2015 --date 02/15/2015
+    Run the model for using a specific end date
+    Might be useful for reporting part-way through the year.
 
 
-permits.py --update-geometry
-    Drops the processing geometries and reloads them with the expectation that
-      they've been updated.
-
-permits.py --add-geometry <[list, of, features]>
-permits.py --rm-geometry
+permits.py --add-geometry <feature>
+permits.py --rm-geometry <table>
 
 
 2018 Scenario:
 Email the county for their data and place properly-named excel file(s) to county/raw/
 run `permits.py --update` to update the required geometries (spatial data)
-run `permits.py --run` to download, process, spatialize permit data and output reports
+run `permits.py --append 2018
+run `permits.py --report` to output reports
 
-
-
-
-import argparse
-import sys
-from datetime import datetime as dt
-
-CURRENT_YEAR = dt.now().year
-
-start_fmt = "01/01/{}"
-end_fmt = "12/31/{}"
-
-
-if __name__ == "__main__":
-    # Arg Parser stuff
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--from", action="store", dest="yr_from",
-                        help="Start year")
-    parser.add_argument("--to", action="store", dest="yr_to",
-                        help="End year")
-    parser.add_argument("-a", "--append-year", action="store",
-                        dest="append", help="Append a year of permit data")
-    parser.add_argument("--reset", action="store",
-                        dest="append", help="Append a year of permit data")
-
-    if
-    args = parser.parse_args(['--from', 2013, '--to', 2016])
-    years = list(range(args.yr_from, args.yr_to + 1))
-    for year in years:
-        download_permit_data(year)
-        process_permit_data(year)
