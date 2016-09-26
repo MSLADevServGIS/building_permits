@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """get_permits.py
 This script <will be> the control mechanism for the permit spatialization
 and reporting process.
@@ -40,7 +42,7 @@ def get_permits(report_name, out, from_date, to_date):
         print("It also needs a environment variable 'chromedriver'\n"
               "that is set to the location of chromedriver.exe")
         sys.exit(1)
-    
+
     profile = webdriver.ChromeOptions()
     profile.add_argument("--disable-gpu")
     profile.add_experimental_option(
@@ -132,7 +134,7 @@ if __name__ == "__main__":
                         dest="reset", help="Append a year of permit data")
 
     args = parser.parse_args()
-    
+
     if args.reset:
         reset_db()
         print("Database reset")
