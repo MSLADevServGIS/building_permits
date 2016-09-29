@@ -3,11 +3,15 @@ Inputs:
 {0}: res<year> table -- input permit table
 {1}: new density<year> table -- final permit product for mapping/analysis
 {2}: new th_dev<year> table -- townhouse development
+
+Outputs:
+Creates the density<year> table(s).
+Creates the th_dev<year> table(s).
 */
 
 -- Calc duac including total dwellings and total area of parcels intersecting multi-point permits
 -- E.g. 1500 S 14TH ST (2014) 62 duac
-CREATE TABLE {1} (
+CREATE TABLE density{1} (
   permit_number TEXT PRIMARY KEY,
   geocode TEXT,
   address TEXT,
@@ -17,7 +21,7 @@ CREATE TABLE {1} (
   condo_proj TEXT,
   geometry MULTIPOINT);
 
-INSERT INTO {1} SELECT * FROM (
+INSERT INTO density{1} SELECT * FROM (
   SELECT 
 	permit_number,
     u.geocode AS geocode, 
@@ -42,13 +46,13 @@ SELECT RecoverGeometryColumn('{1}', 'geometry', 2256, 'MULTIPOINT', 2);
 
 
 -- Make a table to track townhome (th) / condo development activity
-CREATE TABLE {2} (
+CREATE TABLE th_dev{1} (
   name TEXT,
   sum_dwellings INTEGER,
   acres REAL,
   proj_duac REAL);
 
-INSERT INTO {2} SELECT * FROM (
+INSERT INTO th_dev{1} SELECT * FROM (
   SELECT c.name AS name,  
     SUM(sum_dwellings) as sum_dwellings, 
     SUM(Area(c.geometry))/43560.0 AS acres, 
@@ -60,19 +64,19 @@ INSERT INTO {2} SELECT * FROM (
 
 
 -- Change the incorrectly calculated townhome/condo duacs
-UPDATE {1}  
+UPDATE density{1}  
 SET duac = (
     SELECT proj_duac
-	FROM {2} t
-	JOIN {1} d ON t.name = d.condo_proj)
+	FROM th_dev{1} t
+	JOIN density{1} d ON t.name = d.condo_proj)
 WHERE condo_proj IS NOT NULL;
 
 -- Taking the FLOOR of 0.x results in 0.0, when really it should be 1.0
-UPDATE {1} 
+UPDATE density{1} 
 SET duac = 1.0 
 WHERE duac = 0.0;
 
-UPDATE {2} 
+UPDATE th_dev{1} 
 SET proj_duac = 1.0 
 WHERE proj_duac = 0.0;
 

@@ -191,11 +191,9 @@ def main():
     print("Generating density tables...")
     for table in PERMIT_TABLES:
         year = table.split("res")[1]
-        density_table = "density{}".format(year)
-        th_dev_table = "th_dev{}".format(year)
         if "cnty" in table:
-            density_table = "cnty" + density_table
-            th_dev_table = "cnty" + th_dev_table
+            year = str(year) + "_cnty"
+            # E.g. 'density2015_cnty' / 'sfrdev2015_cnty'
         status.write("  {}...".format(density_table))
         if density_table or th_dev_table not in conn.get_tables():
             # Call the spatialize.sql script and send it the current table
